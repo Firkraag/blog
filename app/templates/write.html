@@ -1,0 +1,18 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+    <form class="form-horizontal" action="" method="post" name="write">
+        {{ form.hidden_tag() }}
+        <!--     <label for="title">Blog title</label>-->
+        {{ form.title(size = 70, value='blog title') }}<br>
+        {% for error in form.title.errors %}
+        <span style="color: red;">{{ error }}</span>
+        {% endfor %}<br>
+        {{ form.content }}<br>
+        {% for error in form.content.errors %}
+        <span style="color: red;">{{ error }}</span>
+        {% endfor %}<br>
+        <input type="SUBMIT", value="submit">
+    </form>
+{% endblock %}

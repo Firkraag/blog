@@ -1,0 +1,32 @@
+<html>
+<head>
+    {% if title %}
+    <title>{{ title }}</title>
+    {% else %}
+    <title>my first blog</title>
+    {% endif %}
+</head>
+<body>
+    {% if not current_user.is_anonymous %}
+    <div>{{ current_user.nickname }}'s blog
+    | {% endif %} <a href="/index">Home</a>
+    | <a href="/index">About me</a>
+    {% if not current_user.is_anonymous %}
+    | <a href="/logout">log out</a>
+    {% else %}
+    | <a href="/login">log in</a>
+    {% endif %}
+    </div>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

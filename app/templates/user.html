@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+    <h1>My Profile</h1> 
+</div>
+<div>
+    <h2>My blogs</h2>
+    <ul>
+    {% for blog in blogs %}
+    <li><a href="/blog/{{ blog.id }}"">{{ blog.title }}</a>    created by {{ blog.author.nickname }} at {{ blog.timestamp }}</li>    
+    {% endfor %}
+    </ul>
+</div>
+{% endblock %}
