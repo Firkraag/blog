@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<ul class="nav nav-tabs">
+  <li><a href="/manage/blogs">blogs</a></li>
+  <li class="active"><a href="/manage/comments">comments</a></li>
+</ul>
+<table class="table table-hover table-striped">
+    <thead>
+        <th>author</th>
+        <th>content</th>
+        <th>create time</th>
+        <th>operation</th> 
+    </thead>
+    <tbody>
+        {% for comment in comments %}
+        <tr>
+            <td><span>NULL</span></td>
+            <td><span>comment.content</span></td>
+            <td>{{ momentjs(comment.timestamp).format("YYYY-MM-DD") }}</td>
+            <td>
+                <a href="#" class="btn btn-default">
+                    <span class="glyphicon glyphicon-trash"></span>
+            </td>
+        <tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+

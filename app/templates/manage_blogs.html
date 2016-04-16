@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<ul class="nav nav-tabs">
+  <li class="active"><a href="/manage/blogs">blogs</a></li>
+  <li><a href="/manage/comments">comments</a></li>
+</ul>
+<a href="/manage/write" class="btn btn-primary">
+    <span class="glyphicon glyphicon-plus"></span>New Blog 
+</a>
+<table class="table table-hover table-striped">
+    <thead>
+        <th>title</th>
+        <th>create time</th>
+        <th>operation</th> 
+    </thead>
+    <tbody>
+        {% for blog in blogs %}
+        <tr>
+            <td><a href="/blog/{{ blog.id }}">{{ blog.title }}</a></td>
+            <td>{{ momentjs(blog.timestamp).format("YYYY-MM-DD") }}</td>
+            <td>
+                <a href="/manage/edit/{{ blog.id }}" class="btn btn-default">
+                    <span class="glyphicon glyphicon-edit"></span>
+                </a>
+                <a href="#" class="btn btn-default">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </a>
+            </td>
+        <tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

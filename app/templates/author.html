@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+    <h1>My Profile</h1> 
+</div>
+<div>
+    <h2>My blogs</h2>
+    {% for blog in blogs %}
+    <li><a href="/blog/{{ blog.id }}">{{ blog.title }}</a>    created by {{ blog.author.nickname }} at {{ momentjs(blog.timestamp).format('YYYY/MM/DD') }}</li>    
+    {% endfor %}
+</div>
+{% endblock %}

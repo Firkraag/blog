@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+        <script>
+            function something() {
+    $.ajax({
+            type : "GET",
+            url : "{{ url_for('test') }}",
+            data: JSON.stringify("abc"),
+            contentType: 'application/json;charset=UTF-8',
+            success: function(result) {
+                console.log(result);
+                alert(result);
+            }
+        });
+    alert("abc");
+//            var http = new XMLHttpRequest();
+//            http.open('GET', '/test', true);
+//            http.send();
+//            var i = http.responseText;
+//            alert(i);
+//            var info = JSON.parse(http.responseText);
+//            alert(info.abc)
+//            alert(info.sfd)
+//            alert(info);
+            };
+        </script>
+    </head>
+    <body>
+        <input type="button" onclick="something()"></input>
+    </body>
+</html>

@@ -1,5 +1,6 @@
 <article>
-    <h1>{{ blog.title }}</h1>
-    <p>{{ blog.content }}</p>
-    <hr>
+    <h1><a href="/blog/{{ blog.id }}">{{ blog.title }}</a></h1>
+    <h5><a href="/author/{{ blog.author.nickname }}">{{ blog.author.nickname }}</a>       {{ momentjs(blog.timestamp).fromNow() }}    </h5>
+    <p>{{ blog.summary }}</p><br>
+    <a href="/blog/{{ blog.id }}">Read More...</a>
 </article>
