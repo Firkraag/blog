@@ -16,8 +16,8 @@ OAUTH_CREDENTIALS = {
     },
 
     'github': {
-        'id': '',
-        'secret': ''
+        'id': '99f364dc1cd685976c1e',
+        'secret': 'd322387d0906e8e18e0a007e699bfd55da763b14'
     }
 }
 

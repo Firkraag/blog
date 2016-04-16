@@ -1,13 +1,13 @@
 from app import app, db, lm
-from flask import render_template, redirect, url_for, flash, g, request
+from flask import render_template, redirect, url_for, flash, g, request, jsonify
 from .oauth import OAuthSignIn
-from flask.ext.login import login_user, logout_user, current_user, login_required
-from .models import User, Blog
-from .forms import WriteForm
+from flask.ext.login import login_user, logout_user, current_user, login_required#, jsonify
+from .models import User, Blog, Comment
+from .forms import WriteForm, CommentForm
 from datetime import datetime
 from markdown import Markdown
-import os
-import subprocess
+from hashlib import md5
+import json
 
 md = Markdown()
 @app.errorhandler(404)
@@ -21,14 +21,7 @@ def before_request():
 @app.route('/')
 @app.route('/index')
 def index():
-    blogs = [
-        {'title':   'example1',
-         'content': 'fake1'
-        },
-        {'title':   'example2',
-         'content': 'fake2'
-        }
-    ]
+    blogs = Blog.query.order_by(Blog.timestamp.desc()).all()
     return render_template('index.html', blogs = blogs)
 
 @lm.user_loader
@@ -38,7 +31,7 @@ def load_user(id):
 @app.route('/login')
 def login():
     if not g.user.is_anonymous:
-        return redirect(url_for('index'))
+        return redirect(url_for('manage'))
     else:
         return render_template('login.html', title = "Sign In")
 
@@ -67,13 +60,14 @@ def oauth_callback(provider):
         return redirect(url_for('index'))
     user = User.query.filter_by(social_id=social_id).first()
     if not user:
-        user = User(social_id=social_id, nickname=username, email=email)
+        user = User(social_id=social_id, nickname=username, email=email, admin = False)
         db.session.add(user)
         db.session.commit()
     login_user(user, remember = True)
-    return redirect(request.args.get('next') or url_for('index'))
+    return redirect(url_for('manage'))
+#    return redirect(request.args.get('next') or url_for('index'))
 
-@app.route('/user/<name>')
+@app.route('/author/<name>')
 def user(name):
 #    blogs = [
 #        {
@@ -95,42 +89,127 @@ def user(name):
 #    ]
     user = User.query.filter_by(nickname = name).first()
     blogs = user.blogs.all()
-    return render_template('user.html', blogs = blogs)
+    return render_template('author.html', blogs = blogs)
 
-@app.route('/blog/<id>')
+@app.route('/blog/<id>', methods = ['GET', 'POST'])
 def blog(id):
-#    with open('/home/windheart/ft.py') as f:
-#        content = f.read()
-#    blog = {
-#            'title': 'first blog',
-#            'timestamp': 20160330,
-#            'author':
-#            {
-#                'nickname': 'SmilingWang'
-#            },
-#            'content': content
-#        }
+    form = CommentForm()
+    if form.validate_on_submit():
+        nickname = request.form.get('nickname')
+        url = request.form.get('url')
+        email = request.form.get('email')
+        content = request.form.get('content')
+        html_content = md.convert(content)
+        timestamp = datetime.utcnow()
+        comment = Comment(author_nickname = nickname, author_url = url, author_email = email, content = content, html_content = html_content, timestamp = timestamp, blog_id = id)
+        db.session.add(comment)
+        db.session.commit()
     blog = Blog.query.get(id)
-    content = md.convert(blog.content)
-#    name = 'blog_' + str(blog.id) 
-#    with open(name, 'w') as f:
-#        f.write(blog.content.encode('utf-8'))
-#    content = subprocess.check_output("app/Markdown.pl %s" % name, shell = True).decode('utf-8')
-#    print content
-#    with open(name, 'w') as f:
-#        f.write(blog.content)
-#        content = os.system("app/Markdown.pl %s" % name)
-    return render_template('blog.html', blog = blog, content = content)
+    comments = blog.comments.order_by(Comment.timestamp.desc()).all()
+    return render_template('blog.html', blog = blog, form = form, comments = comments) 
 
-@app.route('/write', methods = ['GET', 'POST'])
+@app.route('/manage/write', methods = ['GET', 'POST'])
 @login_required
 def write():
     form = WriteForm()
     if form.validate_on_submit():
-        blog = Blog(content = form.content.data, title = form.title.data, timestamp = datetime.utcnow(), author = current_user)
+        content = form.content.data
+        html_content = md.convert(content)
+        blog = Blog(content = form.content.data, summary = form.summary.data, html_content = html_content, title = form.title.data, timestamp = datetime.utcnow(), author = current_user)
         db.session.add(blog)
         db.session.commit()
         flash('Your have written a new blog')
         return redirect(url_for('index'))
     else:
         return render_template('write.html', form = form)
+
+@app.route('/manage/edit/<id>', methods = ['GET', 'POST'])
+@login_required
+def edit(id):
+    form = WriteForm()
+    if form.validate_on_submit():
+        blog = Blog.query.get(id)
+        blog.content = form.cotent.data
+        blog.html_content = md.convert(blog.content)
+        blog.title = form.title.data
+        blog.summary = form.summary.data
+        db.session.commit()
+        content = form.content.data
+        html_content = md.convert(content)
+        blog = Blog(content = form.content.data, summary = form.summary.data, html_content = html_content, title = form.title.data, timestamp = datetime.utcnow(), author = current_user)
+        db.session.add(blog)
+        db.session.commit()
+        flash('Your have updated your blog')
+        return redirect(url_for('index'))
+    else:
+        blog = Blog.query.get(id)
+        return render_template('edit.html', form = form, blog = blog)
+
+@app.route('/manage/')
+@app.route('/manage/blogs')
+@login_required
+def manage():
+    blogs = Blog.query.order_by(Blog.timestamp.desc()).all()
+    return render_template('manage_blogs.html', blogs = blogs)
+
+@app.route('/manage/comments')
+@login_required
+def manage_comments():
+    return render_template('manage_comments.html')
+
+@app.route('/admin/')
+@login_required
+def admin():
+    return '/admin'
+
+@app.route('/comment', methods = ['POST'])
+def comment():
+    form = CommentForm()
+#    if form.validate_on_submit():
+#    blog_id = request.form.get('blog_id')
+#    blog_id = 2
+#    nickname = request.form.get('nickname')
+#    url = request.form.get('url')
+#    email = request.form.get('email')
+#    content = request.form.get('content')
+#    blog_id = request.form.get('blog_id')
+    blog_id = request.form['blog_id']
+    print blog_id
+    print request.form
+    nickname = request.form['nickname']
+    url = request.form['url']
+    email = request.form['email']
+    print email
+    content = request.form['content']
+    html_content = md.convert(content)
+    timestamp = datetime.utcnow()
+    comment = Comment(author_nickname = nickname, author_url = url, author_email = email, content = content, html_content = html_content, timestamp = timestamp, blog_id = blog_id)
+    db.session.add(comment)
+    db.session.commit()
+    avatar = 'http://www.gravatar.com/avatar/%s?d=mm&s=%d' % (md5(email.encode('utf-8')).hexdigest(), 60) 
+    print avatar
+    return jsonify({
+        'nickname':nickname,
+        'url':url,
+        'avatar':avatar,
+        'content':html_content,
+    })
+#    else:
+#        blog_id = request.form.get('blog_id')
+#        blog_id = 2
+#        blog = Blog.query.get(blog_id)
+#        comments = blog.comments.all()
+#        return render_template('blog.html', blog = blog, form = form, comments = comments) 
+
+@app.route('/test')
+def test():
+    return json.dumps(
+        {'abc': 1,
+        'sfd': 2,
+        'sdf': 3
+        }
+    )
+
+@app.route('/foobar')
+def foobar():
+    return render_template('foobar.html')
