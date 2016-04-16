@@ -12,5 +12,3 @@ pip install flask-babel
 pip install guess_language
 pip install flipflop
 pip install coverage
-pip install rauth
-pip install markdown

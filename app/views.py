@@ -126,24 +126,26 @@ def write():
 @app.route('/manage/edit/<id>', methods = ['GET', 'POST'])
 @login_required
 def edit(id):
+    print "here"
     form = WriteForm()
     if form.validate_on_submit():
         blog = Blog.query.get(id)
-        blog.content = form.cotent.data
+        blog.content = form.content.data
         blog.html_content = md.convert(blog.content)
         blog.title = form.title.data
         blog.summary = form.summary.data
         db.session.commit()
-        content = form.content.data
-        html_content = md.convert(content)
-        blog = Blog(content = form.content.data, summary = form.summary.data, html_content = html_content, title = form.title.data, timestamp = datetime.utcnow(), author = current_user)
-        db.session.add(blog)
-        db.session.commit()
         flash('Your have updated your blog')
         return redirect(url_for('index'))
     else:
+        print "not validate"
+        print id
         blog = Blog.query.get(id)
-        return render_template('edit.html', form = form, blog = blog)
+        print blog.content
+        form.title.data = blog.title
+        form.content.data = blog.content
+        form.summary.data = blog.summary
+        return render_template('write.html', form = form)
 
 @app.route('/manage/')
 @app.route('/manage/blogs')

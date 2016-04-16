@@ -10,19 +10,19 @@
         {{ form.hidden_tag() }}
         <!--     <label for="title">Blog title</label>-->
     <div class="form-group">
-        {{ form.title(maxlength= '140', class = 'form-control',  default = blog.title) }}<br>
+        {{ form.title(maxlength= '140', class = 'form-control') }}<br>
         {% for error in form.title.errors %}
         <span style="color: red;">{{ error }}</span>
         {% endfor %}<br>
     </div>
     <div class="form-group">
-        {{ form.content(data_provide = 'markdown', rows = '50', class = 'form-control', default = blog.content) }}<br>
+        {{ form.content(data_provide = 'markdown', rows = '50', class = 'form-control') }}<br>
         {% for error in form.content.errors %}
         <span style="color: red;">{{ error }}</span>
         {% endfor %}<br>
     </div>
     <div class="form-group">
-        {{ form.summary(row = '50', class = 'form-control', default = blog.summary) }}<br>
+        {{ form.summary(row = '50', class = 'form-control') }}<br>
         {% for error in form.summary.errors %}
         <span style="color: red;">{{ error }}</span>
         {% endfor %}<br>
